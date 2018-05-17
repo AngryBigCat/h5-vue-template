@@ -60,6 +60,9 @@ export default {
         case 'zsp':
 
           break;
+        case '':
+
+          break;
         case 'jshrb':
           this.artListShow = true;
           break;
