@@ -1,0 +1,52 @@
+@keyframes rotate {
+  from {
+    transform: rotate(0);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes float {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(20%);
+  }
+}
+
+@keyframes mask-flash {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: .5;
+  }
+}
+
+@keyframes down-flash {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(50%);
+  }
+}
+
+@keyframes zan-shake {
+  from {
+    transform: rotate(-10deg);
+    transform-origin: left bottom;
+  }
+  to {
+    transform: rotate(30deg);
+    transform-origin: left bottom;
+  }
+}
+
+.rotate {
+  animation: rotate 10s linear infinite;
+}
