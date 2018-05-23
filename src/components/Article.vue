@@ -35,7 +35,13 @@ export default {
       });
     },
     onRedirectToJshrb() {
-      this.$router.go(-1);
+      this.$router.push({
+        path: '/content/'+ this.$route.params.name,
+        query: {
+          subScrollTop: this.$route.query.subScrollTop,
+          scrollTop: this.$route.query.scrollTop
+        }
+      });
     }
   },
   computed: {

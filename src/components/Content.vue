@@ -65,6 +65,7 @@ export default {
       if (this.$refs.article.scrollHeight === this.$refs.article.offsetHeight) {
         this.bottomShow = false;
       }
+      this.$refs.article.scrollTo(0, this.$route.query.subScrollTop);
     },
     onRedirectHome() {
       const scrollTop = this.$route.query.scrollTop
@@ -76,7 +77,13 @@ export default {
     },
     onReadArticle(id) {
       const name = this.$route.params.name;
-      this.$router.push('/content/' + name + '/' + id);
+      this.$router.push({
+        path: '/content/' + name + '/' + id,
+        query: {
+          scrollTop: this.$route.query.scrollTop,
+          subScrollTop: this.$refs.article.scrollTop
+        }
+      });
     }
   },
   computed: {

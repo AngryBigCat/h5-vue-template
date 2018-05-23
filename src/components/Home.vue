@@ -23,33 +23,6 @@ export default {
     }
   },
   mounted() {
-    var overscroll = function(el) {  
-        el.addEventListener('touchstart', function() {  
-            var top = el.scrollTop  
-            ,totalScroll = el.scrollHeight  
-            ,currentScroll = top + el.offsetHeight;  
-            if(top === 0) {  
-                el.scrollTop = 1;  
-            }else if(currentScroll === totalScroll) {  
-                el.scrollTop = top - 1;  
-            }  
-        });  
-      
-        el.addEventListener('touchmove', function(evt) {  
-        if(el.offsetHeight < el.scrollHeight)  
-            evt._isScroller = true;  
-        });  
-    }  
-
-    overscroll(this.$refs.home);  
-    document.body.addEventListener('touchmove', function(evt) {
-        console.log(evt._isScroller);
-        if(!evt._isScroller) {
-            evt.preventDefault();  
-        }  
-    }, {passive: false});
-
-
     const scrollTop = this.$route.query.scrollTop;
     if (scrollTop) {
       this.$refs.home.scrollTo(0, scrollTop);

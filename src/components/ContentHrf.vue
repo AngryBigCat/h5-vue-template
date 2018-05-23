@@ -13,7 +13,7 @@ export default {
     }
   },
   mounted() {
-    
+    this.$emit('closeMusic');
   },
   methods: {
     onRedirectHome() {
