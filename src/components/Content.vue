@@ -5,22 +5,20 @@
       <div class="lcloud"></div>
       <div class="rcloud"></div>
       <div class="circle">
-        <img src="/static/img/title/hrgy.png" alt="title">
+        <img :src="titleImgUrl" alt="title">
       </div>
       <div class="article" ref="article">
-        <div class="art">
-          <p v-for="v in Array.from({length: 10})">1</p>
-        </div>
+        <div class="art" v-html="category.content"></div>
         <div class="art-list" v-show="artListShow">
-          <div class="art-item" v-for="v in Array.from({length: 10})">
+          <div class="art-item" v-for="v, k in category.articles" :key="k" @click="onReadArticle(v.id)">
             <div class="left">
-              <img src="/static/img/lcloud.png" alt="cover">
+              <img :src="v.cover_url" alt="cover">
             </div>
             <div class="right">
-              <div class="title">李四好人故事</div>
-              <div class="desc">好人故事简介文字,好人故事简介文字,好人故事简介文字,好人故事简介文字,好人故事简介文字,好人故事简介文字</div>
+              <div class="title">{{ v.title }}</div>
+              <div class="desc">{{ v.content }}</div>
               <div class="detail">
-                <span>了解详情 ></span>
+                <span>了解详情 &gt;</span>
               </div>
             </div>
           </div>
@@ -34,14 +32,20 @@
 <script>
 export default {
   name: 'Content',
-  data () {
+  data() {
     return {
       progress: 1,
       artListShow: false,
-      bottomShow: true
+      bottomShow: true,
+      category: {
+        category_name: '',
+        content: '',
+        articles: []
+      },
+      isArticle: false
     }
   },
-  mounted () {
+  mounted() {
     this.$refs.article.addEventListener('scroll', (e) => {
       if (e.target.clientHeight + e.target.scrollTop >= e.target.scrollHeight) {
         this.bottomShow = false;
@@ -52,27 +56,33 @@ export default {
     this.onInit();
   },
   methods: {
-    onInit() {
-      switch (this.$route.params.name) {
-        case 'hrgy':
-
-          break;
-        case 'zsp':
-
-          break;
-        case '':
-
-          break;
-        case 'jshrb':
-          this.artListShow = true;
-          break;
+    async onInit() {
+      const name = this.$route.params.name;
+      await this.$axios.get('ceremony/' + name).then((res) => {
+        this.artListShow = true;
+        this.category = res.data;
+      });
+      if (this.$refs.article.scrollHeight === this.$refs.article.offsetHeight) {
+        this.bottomShow = false;
       }
     },
     onRedirectHome() {
-      this.$router.push('/');
+      const scrollTop = this.$route.query.scrollTop
+      if (this.$route.query.scrollTop >= 0) {
+        this.$router.push({path: "/", query: { scrollTop }});
+      } else {
+        this.$router.push('/');
+      }
+    },
+    onReadArticle(id) {
+      const name = this.$route.params.name;
+      this.$router.push('/content/' + name + '/' + id);
     }
   },
-  components: {
+  computed: {
+    titleImgUrl() {
+      return '/static/img/title/'+ this.$route.params.name +'.png';
+    }
   }
 }
 </script>
@@ -144,6 +154,9 @@ export default {
               font-size: 14px;
               font-weight: bold;
               margin-bottom: 5px;
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
             }
             .desc {
               color: #666;

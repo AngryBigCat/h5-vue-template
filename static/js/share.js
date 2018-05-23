@@ -4,10 +4,9 @@ if (localhost.indexOf("?") != -1) {
 }
 localhost = localhost.replace(/index\.(html|php)$/, "");
 
-console.log(localhost + '/server/share.php?url=');
 $.ajax({
   type: 'GET',
-  url: localhost + '/server/share.php?url=' + encodeURIComponent(location.href),
+  url: localhost + '/share.php?url=' + encodeURIComponent(location.href),
   success: function success(res) {
     var data = JSON.parse(res);
 /*
@@ -15,10 +14,10 @@ $.ajax({
     var textArr = _.shuffle(['又一个春风十里，是你陪伴我走过1/4个世纪', '在我生命里有颗闪耀的星，与我星影不离1/4个世纪']);*/
 
     var shareOption = {
-      title: 'hello index',
-      desc: "25岁影像学术小鲜肉，了解一下~~",
-      link: localhost + '?unionid=' + data.unionid,
-      imgUrl: localhost + '/static/img/logo.jpg',
+      title: '金山好人公园智慧导览平台',
+      desc: '一言一语 一花一木 皆显文明',
+      link: localhost,
+      imgUrl: localhost + '/static/img/logo.png',
       success: function success() {
         /*$.ajax({
             url: 'server.php?a=checkUserShare',

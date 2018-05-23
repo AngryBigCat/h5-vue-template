@@ -2,7 +2,7 @@
 
 $cdn-prefix: '';
 
-@mixin img($img, $width: 100%, $height: 100%, $left: 0, $top: 0, $pos: left top, $size: 100% 100%, $z: 0, $b: null) {
+@mixin img($img, $width: 100%, $height: 100%, $left: auto, $top: auto, $pos: left top, $size: 100% 100%, $z: 0, $b: null) {
   position: absolute;
   @if $img != '' {
     background: $b url($cdn-prefix + $img) no-repeat $pos / $size;
