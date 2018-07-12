@@ -7,14 +7,14 @@
           <div class="header">
             <div class="left">
               <span>对外显示</span>
-              <mt-switch v-model="v.publish"></mt-switch>
+              <mt-switch :value="isPublish(v.publish)" @change="updatePublishState(k)"></mt-switch>
             </div>
             <div class="right">
               <div class="oprate">
-                <div><i class="icon-edit"></i></div>
-                <div><i class="icon-up"></i></div>
-                <div><i class="icon-down"></i></div>
-                <div><i class="icon-copy"></i></div>
+                <div><i class="icon-edit" @click="onRedirectToSub(k)"></i></div>
+                <div><i class="icon-up" @click="updatePutPrev(k, v.id)"></i></div>
+                <div><i class="icon-down" @click="updatePutNext(k, v.id)"></i></div>
+                <div><i class="icon-copy" @click="updateCopy(k, v.id)"></i></div>
                 <div><i class="icon-del" @click="onDelToWordItem(k)"></i></div>
               </div>
             </div>
@@ -22,22 +22,22 @@
           <div class="section">
             <div class="left">
               <div class="img">
-                <img src="" alt="">
+                <img :src="v.img_url">
               </div>
             </div>
             <div class="right">
               <div class="title">{{ v.title }}</div>
-              <div class="desc">{{ v.desc }}</div>
+              <div class="desc">{{ v.intro }}</div>
             </div>
           </div>
           <div class="footer">
             <div class="left">
               <span>访问量：</span>
-              <span>{{ v.visit }}</span>
+              <span>{{ v.visit_count }}</span>
             </div>
             <div class="right">
               <span>创建日期：</span>
-              <span>{{ v.created_at }}</span>
+              <span v-html="formatDate(v.created_at)"></span>
             </div>
           </div>
         </li>
@@ -60,7 +60,9 @@
 
 <script>
 import Mock from 'mockjs';
-import { MessageBox } from 'mint-ui'
+import dayjs from 'dayjs';
+import { Indicator, Toast, MessageBox } from 'mint-ui';
+import qs from 'qs';
 
 export default {
   name: "Word",
@@ -70,19 +72,22 @@ export default {
     }
   },
   mounted() {
-    this.wordItems = Mock.mock({
-      'list|1-5': [
-        {
-          'id|+1': 1,
-          'publish': true,
-          'title': '@cparagraph()',
-          'desc': '@cparagraph()',
-          'visit': 123,
-          'created_at': '@date(yyyy-MM-dd)',
-          'img_url': ''
+    if (!this.userinfo) {
+      this.$router.push('/center');
+      Toast('您还没有登陆，请登陆后重试');
+    } else {
+      Indicator.open();
+      this.axios({
+        method: 'get',
+        url: 'user/'+ this.userinfo.user_id +'/wiki',
+        headers: {
+          Authorization: localStorage.getItem('token')
         }
-      ]
-    }).list;
+      }).then((res) => {
+        this.wordItems = res.data.wikis;
+        Indicator.close();
+      });
+    }
   },
   methods: {
     onDelToWordItem(k) {
@@ -92,9 +97,66 @@ export default {
         showCancelButton: true
       }).then(res => {
         if (res === 'confirm') {
-          this.wordItems.splice(k, 1);
+          Indicator.open();
+          this.axios.post('user/'+ this.userinfo.user_id +'/wiki/' + this.wordItems[k].id, qs.stringify({
+            _method: 'DELETE'
+          })).then(() => {
+            this.wordItems.splice(k, 1);
+            Indicator.close();
+          });
         }
       });
+    },
+    onRedirectToSub(k) {
+      this.$router.push({
+        path: '/create',
+        query: {
+          editid: this.wordItems[k].id
+        }
+      })
+    },
+    updatePublishState(k) {
+      let wiki_id = this.wordItems[k].id;
+
+      if (this.wordItems[k].publish == 'true') {
+        this.wordItems[k].publish = 'false';
+      } else if (this.wordItems[k].publish == 'false') {
+        this.wordItems[k].publish = 'true';
+      }
+
+      let wiki = JSON.parse(this.wordItems[k].wiki);
+      wiki.isPublish = this.wordItems[k].publish;
+
+
+
+      this.axios.post('user/'+ this.userinfo.user_id +'/wiki/'+ wiki_id, qs.stringify({
+        wiki: JSON.stringify(wiki),
+        _method: 'put'
+      }), {
+        headers: {
+          Authorization: localStorage.getItem('token')
+        }
+      }).then((res) => {
+        console.log(res)
+      });
+    },
+    formatDate(time) {
+      console.log(time);
+      return dayjs(parseInt(time + '000')).format('YYYY-MM-DD HH:mm:ss');
+    },
+    isPublish(str) {
+      if (str == 'true') {
+        return true;
+      } else if (str == 'false') {
+        return false;
+      }
+    }
+  },
+  computed: {
+    userinfo() {
+      let token = localStorage.getItem('token');
+      if (!token) return false;
+      return JSON.parse(atob(token.split('.')[1]))
     }
   }
 }
@@ -167,7 +229,7 @@ export default {
         outline: none;
         color: #fff;
         text-decoration: none;
-        font-size: 13px;
+        font-size: 14px;
         &:first-of-type {
           margin-right: 30px;
         }
@@ -223,7 +285,12 @@ export default {
             .img {
               width: 160px;
               height: 90px;
-              background: red;
+              img {
+                width: 100%;
+                height: 100%;
+                border-radius: 4px;
+                box-shadow: 0 1px 2px #ccc;
+              }
             }
           }
           .right {
@@ -231,21 +298,23 @@ export default {
             .title {
               font-weight: bold;
               height: 20px;
-              margin-bottom: 4px;
+              margin-bottom: 2px;
               overflow: hidden;
               white-space: nowrap;
               text-overflow: ellipsis;
             }
             .desc {
               height: 66px;
-              line-height: 16.5px;
+              line-height: 122%;
               text-overflow: ellipsis;
               -webkit-line-clamp: 4;
               -webkit-box-orient: vertical;
               display: -webkit-box;
               overflow: hidden;
-              font-size: 12px;
+              font-size: 14px;
               text-align: justify;
+              word-break: break-all;
+
             }
           }
         }

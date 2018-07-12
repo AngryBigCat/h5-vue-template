@@ -1,12 +1,17 @@
 <template>
   <div class="CenterIndex">
-    <router-view></router-view>
+    <router-view @onUserNotLogin="onUserNotLogin"></router-view>
   </div>
 </template>
 
 <script>
 export default {
-  name: "CenterIndex"
+  name: "CenterIndex",
+  methods: {
+    onUserNotLogin() {
+      this.$emit('onUserNotLogin');
+    }
+  }
 }
 </script>
 

@@ -1,25 +1,30 @@
 <template>
-  <div class="Wiki">
+  <div class="Wiki" ref="root">
     <div class="container">
-      <mt-header :title="words.title"></mt-header>
+      <div class="music-icon music-icon-x" ref="musicIcon" v-if="wiki.music" @click="onToggleMusic"></div>
+      <mt-header :title="wiki.title"></mt-header>
       <div class="banner">
         <mt-swipe>
-          <mt-swipe-item v-for="v, k in words.banners" :key="k">
-            <img :src="v.src" :alt="v.desc">
+          <mt-swipe-item v-for="v, k in wiki.banners" :key="k">
+            <img :src="v.src" width="100%" height="100%" :alt="v.desc">
           </mt-swipe-item>
         </mt-swipe>
       </div>
       <div class="content">
-        <div class="intro">{{ words.intro }}</div>
+        <div class="intro">
+          <div class="header"></div>
+          <div class="main">{{ wiki.intro }}</div>
+          <div class="footer"></div>
+        </div>
         <div class="words">
-          <div class="item" v-for="v,k in words.wordItems" :key="k">
+          <div class="item" v-for="v, k in wiki.words" :key="k">
             <div class="header" @click="onShowWord(k)">
               <span>{{ v.title }}</span>
               <div class="reduce" :class="{ increase: v.isShow }"></div>
             </div>
             <div class="main" v-if="v.isShow">
               <div class="desc">{{ v.desc }}</div>
-              <ul class="imgs">
+              <ul class="imgs" v-if="v.imgs[0].src != ''">
                 <li v-for="vv,kk in v.imgs" :key="kk">
                   <div class="img">
                     <img :src="vv.src" :alt="vv.desc">
@@ -47,58 +52,80 @@
 
 <script>
 import Mock from 'mockjs';
+import { Indicator } from 'mint-ui';
+
 export default {
   name: "Wiki",
   data() {
     return {
-      words: {
-        title: '这里是自定义标题',
-        intro: '这里是一段简介 这里是一段简介',
-        banners: [
-          {
-            src: '/static/img/noWord.png',
-            desc: '这里是banner图片介绍'
-          },
-          {
-            src: '/static/img/noWord.png',
-            desc: '这里是banner图片介绍'
-          }
-        ],
-        wordItems: [
-          {
-            title: '这里是子词条标题',
-            desc: '这里是子词条描述 这里是子词条描述 这里是子词条描述',
-            isShow: false,
-            imgs: [
-              {
-                src: '/static/img/noWord.png',
-                desc: '这里是自词条描述驱蚊器翁请问请问王企鹅去问问'
-              },
-              {
-                src: '/static/img/noWord.png',
-                desc: '这里是自词条描述'
-              }
-            ]
-          }
-        ]
-      }
+      wiki: {
+        title: '',
+        intro: '',
+        banners: [],
+        words: [],
+        music: null
+      },
+      bgMusic: null
     }
   },
   mounted() {
+    Indicator.open();
+    const id = this.$route.params.id;
+    this.axios.get('wiki/' + id)
+      .then((res) => {
+        this.wiki = JSON.parse(res.data.wiki.wiki);
+        if (this.wiki.isMusic && this.wiki.music) {
+          this.bgMusic = new Audio();
+          this.bgMusic.preload = true;
+          this.bgMusic.src = 'http://youbanquan.com/music/' + this.wiki.music.site;
+          this.autoPlayMusic();
+        }
+        Indicator.close();
+      });
+  },
+  destroyed() {
+    if (this.bgMusic) {
+      this.bgMusic.pause();
+    }
   },
   methods: {
+    onToggleMusic() {
+      if (this.bgMusic.paused) {
+        this.bgMusic.play();
+        this.$refs.musicIcon.classList.remove('music-icon-x');
+      } else {
+        this.bgMusic.pause();
+        this.$refs.musicIcon.classList.add('music-icon-x');
+      }
+    },
+    autoPlayMusic() {
+      let flag = true;
+      this.$refs.root.addEventListener('touchstart', () => {
+        if (flag) {
+          this.bgMusic.play();
+          this.$refs.musicIcon.classList.remove('music-icon-x');
+          flag = false;
+        }
+      }, false)
+    },
     showShareTipMask() {
       this.$refs.shareContainer.style.display = 'block';
       this.$refs.shareContainer.style.top = window.scrollY + 'px';
+      this.$refs.root.addEventListener('touchmove', this.preventDefault, false);
     },
     onCloseShareContainer() {
       this.$refs.shareContainer.style.display = 'none';
+      document.body.style.overflow = 'auto';
+      this.$refs.root.removeEventListener('touchmove', this.preventDefault, false)
     },
     onShowWord(k) {
-      this.words.wordItems[k].isShow = !this.words.wordItems[k].isShow;
+      this.wiki.words[k].isShow = !this.wiki.words[k].isShow;
     },
     onRedirectToCreate() {
       this.$router.push('/create');
+    },
+    preventDefault(e) {
+      e.preventDefault();
     }
   }
 }
@@ -113,7 +140,7 @@ export default {
     height: 100vh;
     width: 100vw;
     overflow: hidden;
-    background: rgba(0,0,0, .5);
+    background: rgba(0,0,0, .8);
     display: none;
     text-align: center;
     box-sizing: border-box;
@@ -123,21 +150,54 @@ export default {
       padding-left: 30px;
     }
   }
+  @keyframes rotate {
+    from {
+      transform: rotate(0);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
   .container {
     height: 100px;
+    .music-icon {
+      position: fixed;
+      right: 15px;
+      top: 15px;
+      height: 30px;
+      width: 30px;
+      background: url("/static/img/music1.png") no-repeat center / 100% 100%;
+      animation: rotate 10s linear infinite;
+      z-index: 12;
+    }
+    .music-icon-x {
+      background: url("/static/img/music2.png") no-repeat center / 100% 100%;
+      animation: none;
+    }
     .banner {
       height: 56.25vw;
-      background: yellow;
+      background: #eee;
     }
     .content {
       padding: 20px 10px;
       .intro {
-        min-height: 150px;
-        background: url("/static/img/bg-intro.png") no-repeat center / 100% 100%;
-        box-sizing: border-box;
-        padding: 10px 15px;
         margin-bottom: 10px;
-        text-align: justify;
+        .header {
+          height: 22px;
+          background: url("/static/img/wiki/intro-header.png") no-repeat center / 100% 100%;
+        }
+        .main {
+          text-align: justify;
+          word-break: break-all;
+          padding: 0 15px;
+          box-sizing: border-box;
+          border-left: 1px solid #aaa;
+          border-right: 1px solid #aaa;
+        }
+        .footer {
+          height: 22px;
+          background: url("/static/img/wiki/intro-footer.png") no-repeat center / 100% 100%;
+        }
       }
       .words {
         margin-bottom: 30px;
@@ -156,6 +216,15 @@ export default {
             background: white;
             padding: 5px 0;
             box-shadow: 0 1px 3px #ccc;
+            overflow: hidden;
+            span {
+              display: block;
+              width: 150px;
+              margin: 0 auto;
+              overflow: hidden;
+              white-space: nowrap;
+              text-overflow: ellipsis;
+            }
             .reduce {
               position: absolute;
               top: 0;
@@ -176,18 +245,18 @@ export default {
             border-bottom-left-radius: 4px;
             border-bottom-right-radius: 4px;
             box-shadow: 0 1px 3px #ccc;
-            padding: 10px;
+            padding: 20px 10px;
             box-sizing: border-box;
             width: 96%;
             margin: 0 auto;
             .desc {
-              margin-bottom: 10px;
               text-align: justify;
+              word-break: break-all;
             }
             .imgs {
               display: flex;
               list-style-type: none;
-              margin: 0;
+              margin: 10px 0 0;
               padding: 0;
               li {
                 width: 50%;
@@ -204,7 +273,12 @@ export default {
                   align-items: center;
                   img {
                     width: 100%;
-                    height: 100%;
+                    height: 100px;
+                    margin-bottom: 5px;
+                    border-radius: 4px;
+                  }
+                  img[src=""] {
+                    opacity: 0;
                   }
                   .img-desc {
                     font-size: 12px;

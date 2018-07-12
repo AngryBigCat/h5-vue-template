@@ -1,3 +1,51 @@
+$primary-color: #B9955A;
+
+
+.mint-header {
+  background-color: #B9955A;
+}
+.mint-header.is-fixed {
+  z-index: 10;
+}
+
+.mint-header-title {
+  font-weight: bolder;
+  font-size: 14px;
+}
+
+.mint-msgbox-confirm {
+  color: $primary-color;
+}
+
+.mint-tab-item-label {
+  //font-weight: bold;
+  font-size: 14px;
+  color: $primary-color;
+}
+.mint-navbar {
+  padding: 0 10px;
+  background: none;
+}
+
+.mint-navbar .mint-tab-item {
+  padding: 11px 0;
+  color: $primary-color;
+  border-radius: 4px;
+  background: white;
+}
+
+.mint-navbar .mint-tab-item.is-selected {
+  background: $primary-color;
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.mint-navbar .mint-tab-item.is-selected .mint-tab-item-label {
+  color: white;
+  font-weight: bold;
+}
+
+
 .mint-switch-core {
   width: 40px !important;
   height: 20px !important;
@@ -9,4 +57,13 @@
 .mint-switch-core::before {
   width: 38px !important;
   height: 18px !important;
+}
+
+.mint-searchbar-cancel {
+  color: $primary-color;
+}
+
+.mint-switch-input:checked + .mint-switch-core {
+  border-color: $primary-color;
+  background-color: $primary-color;
 }

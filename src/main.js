@@ -3,13 +3,22 @@
 import Vue from 'vue'
 import App from './App'
 import router from './router'
-import mint from 'mint-ui';
+import mint from 'mint-ui'
 import "mint-ui/lib/style.css"
 import "./assets/scss/common.scss"
+import axios from 'axios'
+import lineClamp from 'vue-line-clamp';
+
 
 Vue.use(mint);
+Vue.use(lineClamp);
 
 Vue.config.productionTip = false;
+
+Vue.prototype.axios = axios.create({
+  // baseURL: 'http://xiaotiao.prh5.com/api/'
+  baseURL: 'http://papers.oo/api/'
+});
 
 /* eslint-disable no-new */
 new Vue({

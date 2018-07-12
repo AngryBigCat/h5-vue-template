@@ -2,6 +2,11 @@
   <div class="Center">
     <div class="header">
       <div class="logo"></div>
+      <div class="text" v-if="!userinfo" @click="onUserNotLogin">登陆</div>
+      <div class="text" v-else>
+        <div>用户：<span>{{ userinfo.phone }}</span></div>
+        <div @click="onExitLogin">退出登录</div>
+      </div>
     </div>
     <div class="options">
       <div class="group">
@@ -27,7 +32,7 @@
         </div>
       </div>
       <div class="group">
-        <div class="item">
+        <div class="item" @click="onNavToHttp('http://youbanquan.com')">
           <div class="left">
             <i class="icon-music"></i>
             <span>版权音乐</span>
@@ -36,7 +41,7 @@
             <i class="icon-right"></i>
           </div>
         </div>
-        <div class="item">
+        <div class="item" @click="onNavToHttp('http://prh5.com')">
           <div class="left">
             <i class="icon-king"></i>
             <span>高级定制</span>
@@ -45,7 +50,7 @@
             <i class="icon-right"></i>
           </div>
         </div>
-        <div class="item">
+        <div class="item" @click="onNavToPage('/wiki/43')">
           <div class="left">
             <i class="icon-help"></i>
             <span>帮助中心</span>
@@ -70,7 +75,24 @@ export default {
   name: "Center",
   methods: {
     onNavToPage(path) {
-      this.$router.push(path)
+      this.$router.push(path);
+    },
+    onNavToHttp(path) {
+      window.location.href = path;
+    },
+    onUserNotLogin() {
+      this.$emit('onUserNotLogin');
+    },
+    onExitLogin() {
+      localStorage.removeItem('token');
+      location.reload();
+    }
+  },
+  computed: {
+    userinfo() {
+      let token = localStorage.getItem('token');
+      if (!token) return false;
+      return JSON.parse(atob(token.split('.')[1]));
     }
   }
 }
@@ -116,15 +138,21 @@ export default {
 .Center {
   background: #eee;
   .header {
-    height: 200px;
-    background: #333;
+    height: 220px;
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
+    background: url("/static/img/bg-center.png") no-repeat center / 100% 100%;
     .logo {
       width: 100px;
       height: 100px;
       background: url("/static/img/logo.png") no-repeat center / 100% 100%;
+      margin-bottom: 10px;
+    }
+    .text {
+      color: #fff;
+      text-align: center;
     }
   }
   .options {
@@ -149,7 +177,7 @@ export default {
         align-items: center;
         box-sizing: border-box;
         padding: 10px 20px;
-        border-bottom: 2px solid #ccc;
+        border-bottom: 1px solid #ccc;
         font-size: 14px;
         color: #333;
         &:last-of-type {
